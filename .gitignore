@@ -103,7 +103,7 @@ celerybeat.pid
 
 # Environments
 .env
-.venv
+#.venv
 env/
 venv/
 ENV/
@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+client_secret_file.json
+ytauthkey.txt
+*.json
+*.ipynb
+*.bat
