@@ -372,44 +372,6 @@ class YTManager:
             #f.write(str(self.model))
             f.close()
 
-def getChannelDetails(ytmgmt, channelID):
-    print("Required channel")
-    ytmgmt.findLikesListFromChannel(channelID)
-
-    print()
-
-    print("My channel")
-    ytmgmt.findLikesListFromChannel(channelID, mine=True)
-
-def getSubscriptions(ytmgmt, channelID):
-    print("Subscriptions")
-    pp(ytmgmt.fetchSubscriptions(channelID))
-
-def removeSubscription(ytmgmt, subscriptionID):
-    print("Remove Subscription")
-    ytmgmt.removeSubscription(subscriptionID)
-
-def getLists(ytmgmt, channelID):
-    print("Required Lists:")
-    ytmgmt.fetchLists(channelID)
-
-    print()
-    
-    print("My Lists:")
-    ytmgmt.fetchLists(channelID, mine=True)
-
-def setListStatus(ytmgmt, playlistID, title, status):
-    print("Set List Status")
-    ytmgmt.setListStatus(playlistID, title, status)
-
-def deleteList(ytmgmt, playlistID):
-    print("Deleting List")
-    ytmgmt.deleteList(playlistID)
-
-def getListItems(ytmgmt, playlistID):
-    print("Playlist Items:")
-    ytmgmt.fetchListItems(playlistID)
-
 def main():
 
     parser = argparse.ArgumentParser(description='Youtube Manager by SloBlo Labs')
@@ -456,36 +418,6 @@ def main():
             ytmgmt.transferModelToChannel(args.targetChannelId)
         else:
             print("No such file ", args.modelFile, ". Please run YoutubeManager providing a source channel id first.")
-
-
-    # Señor Torpedo
-    #sourceChannelID = "UCAn8rFFe_LLT4w9AJwVd5_g"
-
-    # SloBlo
-    #targetChannelID = "UCZgvuPuU7SHMFTNthGpSbsA"
-
-    # OW
-    #targetChannelID = "UCV_O0uURfWR-TO-W-nj_KYw"
-    #playlistID = "PLIS7PpfF5cZQe5zXE5L_fLlGsRNKVbrPw"
-
-    # Model filename
-    #modelFile = "stmodel.json"
-
-
-    #ytmgmt.loadModelFromChannel(sourceChannelID)
-    #ytmgmt.saveModelToFile(modelFile)
-    #ytmgmt.logout()
-
-    #ytmgmt.loadModelFromFile(modelFile)
-    #ytmgmt.transferModelToChannel(targetChannelID)
-
-    #getChannelDetails(ytmgmt, sourceChannelID)
-    #getSubscriptions(ytmgmt, targetChannelID)
-    #removeSubscription(ytmgmt, "zedPs6E1uXsWOKb2cqEVzZP0EBU6Y-xUCB0TsCdPkqM")
-    #getLists(ytmgmt, targetChannelID)
-    #setListStatus(ytmgmt, aiPlaylist[0], aiPlaylist[1], "private")
-    #getListItems(ytmgmt, sourceLikedVideos)
-    #deleteList(ytmgmt, playlistID)
 
 if __name__ == "__main__":
     main()
