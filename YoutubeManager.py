@@ -2,6 +2,7 @@
 
 # Useful links:
 # https://console.cloud.google.com/home/dashboard
+# https://console.cloud.google.com/iam-admin/quotas
 # https://developers.google.com/youtube/v3/quickstart/python
 # https://developers.google.com/youtube/v3/docs
 # https://developers.google.com/explorer-help/guides/code_samples#python
@@ -10,12 +11,23 @@
 import os
 import json
 import argparse
+import time
+import logging
 from pprint                         import pp
 from googleapiclient.discovery      import build
 from googleapiclient.errors         import HttpError
 from google_auth_oauthlib.flow      import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials      import Credentials
+
+'''
+LOGGER = logging.getLogger('googleapiclient.http')
+LOGGER.setLevel(level=logging.DEBUG)
+
+ch = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+ch.setFormatter(ch)
+LOGGER.addHandler(ch)'''
 
 class YTManager:
     """A class to maintain youtube playlists"""
@@ -181,7 +193,7 @@ class YTManager:
               }
             }
         )
-        response = request.execute()
+        response = request.execute(num_retries=10)
         #pp(response)
         
         return {"title": response['snippet']['title'], "id": response['id']}
@@ -303,19 +315,36 @@ class YTManager:
                 listId = n[0]['id']
             else:
                 # new playlist
-                newList = self.createList(l['title'])
+                while(True):
+                    try:
+                        newList = self.createList(l['title'])
+                    except HttpError as err:
+                        print("Error resp: ", err.resp)
+                        # <HttpError 429 when requesting https://youtube.googleapis.com/youtube/v3/playlists?part=snippet%2Cstatus&alt=json returned "Resource has been exhausted (e.g. check quota).". Details: "Resource has been exhausted (e.g. check quota).">
+                        # https://stackoverflow.com/questions/22786068/how-to-avoid-http-error-429-too-many-requests-python
+                        # https://stackoverflow.com/questions/65907439/youtube-data-api-v3-returns-429-resource-has-been-exhausted-havent-used-nearly
+                        if(err.resp['status'] == '429'):
+                            # Retry after 10s
+                            print("Retry...", end=' ', flush=True)
+                            time.sleep(10)
+                        else:
+                            print(err)
+                            self.logout()
+                            exit(0)
+                    else:
+                        break
                 #pp(newList)
                 listId = newList['id']
             
             existingPlaylistItems = self.fetchListItems(listId)
             for v in l['items']:
-                n = [s for s in existingPlaylistItems if s['id'] == v['id']]
+                n = [s for s in existingPlaylistItems if s['vid'] == v['vid']]
                 if(len(n) == 0):
                     # New video item
                     try:
                         newVideoItem = self.insertListItem(listId, v['vid'])
                     except HttpError:
-                        print("\\", end='', flush=True)
+                        print("!", end='', flush=True)
                     #pp(newVideoItem)
                     #break
                     else:
@@ -331,34 +360,36 @@ class YTManager:
         
         print("Saving liked videos")
         for v in self.model['likedVideos']:
-            n = [s for s in existingLikedVideos if s['id'] == v['id']]
+            n = [s for s in existingLikedVideos if s['vid'] == v['vid']]
             if(len(n) == 0):
                 # New video item
                 try:
                     newVideoItem = self.insertListItem(likesPlaylist, v['vid'])
                 except HttpError:
-                    print("\\", end='', flush=True)
+                    print("!", end='', flush=True)
                 #pp(newVideoItem)
                 #break
-                print(".", end='', flush=True)
+                else:
+                    print(".", end='', flush=True)
             else:
                 print("\\", end='', flush=True)
         print("done.", flush=True)
-
+        
         # Subscriptions
         existingSubscriptions = self.fetchSubscriptions(channelID)
         print("Saving subscriptions")
         for l in self.model['subscriptions']:
-            print(l['title'], end=' ', flush=True)
-            n = [s for s in existingSubscriptions if s['id'] == l['id']]
+            #print(l['title'], end=' ', flush=True)
+            n = [s for s in existingSubscriptions if s['channel'] == l['channel']]
             if(len(n) > 0):
                 # subscription exists
-                print("exists.", flush=True)
+                print("\\", end='', flush=True)
             else:
                 # new subscription
-                self.addSubscription(l['id'])
-                print("subscribed.", flush=True)
+                self.addSubscription(l['channel'])
+                print(".", end='', flush=True)
             #break
+        print("done.", flush=True)
     
     def loadModelFromFile(self, filename):
         with open(filename, 'r', encoding='utf8') as f:

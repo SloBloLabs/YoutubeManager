@@ -42,5 +42,12 @@ python YoutubeManager.py -sc <SOURCE CHANNEL ID> -tc <TARGET CHANNEL ID>
 
 ## Scope
 The script is intended to help porting existing channel conents to another. Please note, as of today, only self created playlists, liked videos and subscriptions are supported.
-The Youtube Client API v3 as of today (2nd April 2021) does not support the WatchList. This is why there will be still some manual steps left to complete the transfer.
-In addition, the script will not preserve watch states of individual videos.
+The Youtube Client API v3 as of today (2nd April 2021) does not support the WatchList. Full Playlists subscribed from a different channel are not recognized neither. This is why there will be still some manual steps left to complete the transfer.
+In addition, the script will not preserve watch states of individual videos and all playlists will be created as private.
+
+## Issues
+If you encounter an error as such
+```
+googleapiclient.errors.HttpError: <HttpError 403 when requesting https://youtube.googleapis.com/youtube/v3/playlists?part=id%2C+snippet%2C+status&maxResults=50&mine=true&alt=json returned "The request cannot be completed because you have exceeded your <a href="/youtube/v3/getting-started#quota">quota</a>.". Details: "The request cannot be completed because you have exceeded your <a href="/youtube/v3/getting-started#quota">quota</a>.">
+```
+you may have consumed your free daily Youtube API quota. Try again the next day. Quotas are reset over night. The script takes care to only insert items that are not yet present within the new account. Check your quotas here: https://console.cloud.google.com/iam-admin/quotas
