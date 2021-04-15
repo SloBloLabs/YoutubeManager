@@ -301,7 +301,7 @@ class YTManager:
         print("done.")
     
     def transferModelToChannel(self, channelID):
-        
+       
         # Self created lists
         existingPlaylists = self.fetchLists(self, channelID)
 
@@ -377,6 +377,8 @@ class YTManager:
         
         # Subscriptions
         existingSubscriptions = self.fetchSubscriptions(channelID)
+        #pp(existingSubscriptions)
+        #exit(0)
         print("Saving subscriptions")
         for l in self.model['subscriptions']:
             #print(l['title'], end=' ', flush=True)
@@ -386,8 +388,12 @@ class YTManager:
                 print("\\", end='', flush=True)
             else:
                 # new subscription
-                self.addSubscription(l['channel'])
-                print(".", end='', flush=True)
+                try:
+                    self.addSubscription(l['channel'])
+                except HttpError:
+                    print("!", end='', flush=True)
+                else:
+                    print(".", end='', flush=True)
             #break
         print("done.", flush=True)
     
